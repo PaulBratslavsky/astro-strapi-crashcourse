@@ -8,7 +8,9 @@
 		<title>Astro Basics</title>
 	</head>
 	<body>
+		<div class="box">header</div>
 		<slot />
+		<div class="box">footer</div>
 	</body>
 </html>
 
@@ -18,5 +20,14 @@
 		margin: 0;
 		width: 100%;
 		height: 100%;
+	}
+
+	.box {
+		display: flex;
+		justify-content: center;
+		justify-items: center;
+		margin: auto;
+		padding: 4rem;
+		background-color: aqua;
 	}
 </style>
