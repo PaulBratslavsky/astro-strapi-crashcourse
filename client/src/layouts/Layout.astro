@@ -1,5 +1,54 @@
 ---
+import type { TBanner, THeader, TFooter } from "../types";
 import '../styles/global.css'
+
+type TStrapiResponse<T = null> = {
+	success: boolean;
+	data?: T;
+	error?: {
+		status: number;
+		name: string;
+		message: string;
+		details?: Record<string, string[]>
+	};
+	meta?: {
+		pagination: {
+			page: number;
+			pageSize: number;
+			pageCount: number;
+			total: number;
+		}
+	}
+}
+
+type TGlobalData = {
+	id: number;
+	documentId: string;
+	title: string;
+	description: string;
+	createdAt: string;
+	publishedAt: string;
+	banner: TBanner;
+	header: THeader;
+	footer: TFooter;
+}
+
+
+
+
+async function getStrapiGlobalData(): Promise<TStrapiResponse<TGlobalData>> {
+	const BASE_API_URL = import.meta.env.VITE_STRAPI_BASE_URL ?? "http://localhost:1337";
+	const path = "/api/global";
+	const url = new URL(path, BASE_API_URL)
+	const response = await fetch(url.href);
+	const data = await response.json()
+	console.dir(data, { depth: null })
+	return data;
+}
+
+const globalData = await getStrapiGlobalData();
+const banner = globalData.data?.banner;
+
 ---
 
 <!doctype html>
@@ -13,7 +62,8 @@ import '../styles/global.css'
 	</head>
 	<body>
 		<div class="box">header</div>
-		<slot />
+		{ banner?.isVisible && <div>{banner.description}</div>}
+		<!-- <slot /> -->
 		<div class="box">footer</div>
 	</body>
 </html>
