@@ -1,0 +1,109 @@
+---
+import { Image as AstroImage } from 'astro:assets';
+
+interface Props {
+  src: string;
+  alt?: string | null;
+  height: number;
+  width: number;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  quality?: number;
+  responsive?: boolean;
+  aspectRatio?: 'square' | '16:9' | '4:3' | 'auto';
+  fallback?: string;
+  sizes?: string;
+}
+
+const { 
+  src, 
+  alt, 
+  height, 
+  width, 
+  loading = 'lazy',
+  quality = 80,
+  responsive = true,
+  aspectRatio = 'auto',
+  fallback = '/images/placeholder.svg',
+  sizes
+} = Astro.props;
+
+// Early returns for validation
+if (!src) {
+  console.warn('StrapiImage: src prop is required');
+  return null;
+}
+
+if (height <= 0 || width <= 0) {
+  console.warn('StrapiImage: height and width must be positive numbers');
+  return null;
+}
+
+// Define styles object with Tailwind classes
+const styles = {
+  container: "overflow-hidden",
+  image: "object-cover transition-opacity duration-300",
+  responsive: "w-full h-auto",
+  square: "aspect-square object-cover",
+  widescreen: "aspect-video object-cover", 
+  standard: "aspect-[4/3] object-cover"
+};
+
+// Helper function to get aspect ratio classes
+const getAspectRatioClass = () => {
+  switch (aspectRatio) {
+    case 'square': return styles.square;
+    case '16:9': return styles.widescreen;
+    case '4:3': return styles.standard;
+    default: return responsive ? styles.responsive : '';
+  }
+};
+
+// Enhanced media URL processing with error handling
+function getStrapiMedia(url: string): string | null {
+  try {
+    if (!url) return null;
+    
+    // Return as-is if it's a data URL (base64)
+    if (url.startsWith("data:")) return url;
+    
+    // Return as-is if it's an absolute URL
+    if (url.startsWith("http") || url.startsWith("//")) return url;
+    
+    // Prepend BASE_URL for relative URLs
+    const BASE_URL = import.meta.env.VITE_STRAPI_BASE_URL ?? "http://localhost:1337";
+    return `${BASE_URL}${url}`;
+  } catch (error) {
+    console.error('StrapiImage: Error processing image URL:', error);
+    return fallback;
+  }
+}
+
+// Process image URL and prepare safe alt text
+const imageUrl = getStrapiMedia(src);
+
+// Early return if no valid image URL
+if (!imageUrl) return null;
+
+const safeAlt = alt || `Image ${width}x${height}`;
+const imageClasses = `${styles.image} ${getAspectRatioClass()} ${Astro.props.class || ''}`;
+
+// Generate responsive sizes if not provided
+const responsiveSizes = sizes || (responsive ? 
+  "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : 
+  undefined
+);
+---
+
+<div class={styles.container}>
+  <AstroImage 
+    src={imageUrl} 
+    alt={safeAlt}
+    height={height} 
+    width={width}
+    loading={loading}
+    quality={quality}
+    sizes={responsiveSizes}
+    class={imageClasses}
+  />
+</div>

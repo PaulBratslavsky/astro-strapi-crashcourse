@@ -1,0 +1,65 @@
+---
+import type { TBanner } from "../types";
+
+interface Props {
+  data: TBanner;
+}
+
+const { data } = Astro.props as Props;
+const { isVisible, link, description } = data;
+
+if (!isVisible) return null;
+
+const styles = {
+  banner:
+    "flex items-center gap-x-6 bg-green-900 px-6 py-2.5 sm:px-3.5 sm:before:flex-1 sticky top-0 z-50",
+  text: "text-sm/6 text-white",
+  link: {
+    label: "font-semibold",
+    svg: "mx-2 inline size-0.5 fill-current",
+  },
+  dismissContainer: "flex flex-1 justify-end",
+  dismissButton: "-m-3 p-3 focus-visible:outline-offset-[-4px]",
+  dismissIcon: "size-5 text-white",
+  srOnly: "sr-only",
+};
+---
+
+<div id="banner" class={styles.banner}>
+  <p class={styles.text}>
+    <a href={link.href} target={link?.isExternal ? "_blank" : "_self"}>
+      <strong class={styles.link.label}>{link.label}</strong><svg
+        viewBox="0 0 2 2"
+        class={styles.link.svg}
+        aria-hidden="true"><circle cx="1" cy="1" r="1"></circle></svg
+      >{description}&nbsp;<span aria-hidden="true">&rarr;</span>
+    </a>
+  </p>
+  <div class={styles.dismissContainer}>
+    <button id="dismiss-button" type="button" class={styles.dismissButton}>
+      <span class={styles.srOnly}>Dismiss</span>
+      <svg
+        class={styles.dismissIcon}
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+        data-slot="icon"
+      >
+        <path
+          d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"
+        ></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  const dismissButton = document.getElementById("dismiss-button");
+  const banner = document.getElementById("banner");
+
+  if (dismissButton && banner) {
+    dismissButton.addEventListener("click", function () {
+      banner.style.display = "none";
+    });
+  }
+</script>
